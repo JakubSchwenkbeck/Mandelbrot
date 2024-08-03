@@ -42,10 +42,9 @@ renderMandelbrot canvas = do
 -- Compute Mandelbrot iterations for a given point (x, y)
 mandelbrotIterations :: Double -> Double -> Int -> Int
 mandelbrotIterations x y maxIterations = ...
-    -- Implement Mandelbrot algorithm here
-    -- You can use complex numbers or direct calculations
-    -- For simplicity, I'll leave this part as an exercise for you!
-
+    -- Implement Mandelbrot algorithm 
+    -- use complex numbers or direct calculations
+    
 -- Map iterations to colors (you can customize this function)
 getColor :: Int -> String
 getColor iterations = ...
@@ -53,11 +52,11 @@ getColor iterations = ...
 -- Utility function to set canvas color at a specific pixel
 setCanvasColor :: CanvasContext -> Int -> Int -> String -> IO ()
 setCanvasColor context x y color = ...
-    -- Implement setting pixel color here
-    -- You can use context methods like fillRect or similar
+    -- Implement setting pixel color 
+    -- use context methods like fillRect or similar
 
 -- Utility function to set canvas size
 setCanvasSize :: Element -> Int -> Int -> IO ()
 setCanvasSize canvas w h = ...
-    -- Implement setting canvas size here
-    -- You can use canvas attributes like width and height
+    -- Implement setting canvas size 
+    -- use canvas attributes like width and height
