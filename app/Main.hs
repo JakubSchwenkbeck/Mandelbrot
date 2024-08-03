@@ -39,15 +39,10 @@ renderMandelbrot canvas = do
                 color = if iterations == maxIterations then "black" else getColor iterations
             liftIO $ setCanvasColor context px py color
 
--- Compute Mandelbrot iterations for a given point (x, y)
-mandelbrotIterations :: Double -> Double -> Int -> Int
-mandelbrotIterations x y maxIterations = 5
-    -- Implement Mandelbrot algorithm 
-    -- use complex numbers or direct calculations
-    
+
 -- Map iterations to colors (you can customize this function)
 getColor :: Int -> String
-getColor iterations = 5
+getColor iterations = ...
 
 -- Utility function to set canvas color at a specific pixel
 setCanvasColor :: CanvasContext -> Int -> Int -> String -> IO ()
