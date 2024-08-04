@@ -18,8 +18,8 @@ main = do
 
     putStrLn "starting local server..."
     startGUI defaultConfig
-        { tpPort = 10000
-        , tpStatic = Just "./content"
+        { jsPort = Just 10000 ,
+         jsStatic = Just "./static"
         } (setup settings)
 
 defaultSettings :: Settings
@@ -32,7 +32,7 @@ defaultSettings = Settings defaultRes defaultZoom defaultSteps
 setup :: Settings -> Window -> UI ()
 setup settings w = void $ do
         E.addStyleSheet w "styles.css"
-        return w # set title "Mandelbrot generator "
+        _ <- return w # set title "Mandelbrot generator "
 
         md <- mandelbrotDisplay settings
         output <- E.div # set A.class_ "output" #+ [element md]
@@ -51,11 +51,11 @@ statusForRendering :: Bool -> String
 statusForRendering True  = waitMessage
 statusForRendering False = promptClick
 
-statusForMouseCoords :: Compl -> String
+statusForMouseCoords :: Complex -> String
 statusForMouseCoords c = "[" ++ show c ++ "]"
 
 promptClick :: String
-promptClick = "click anywhere to zoom in to this point"
+promptClick = "click anywhere to zoomTo in to this point"
 
 waitMessage :: String
 waitMessage = "rendering please wait ..."
