@@ -1,2 +1,2 @@
 # Mandelbrot
-Creting a Mandelbtro simulation in Haskell with the Threepenny framework
+Creating a Mandelbrot simulation in Haskell with the Threepenny framework, aswell as HTML and CSS
