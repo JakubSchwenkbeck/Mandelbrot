@@ -1,7 +1,7 @@
 module Display 
     ( Settings (..)
     , MandelbrotDisplay (..)
-    , Compl (..)
+    , Complex (..)
     , PictureSize (..)
     , PictureCoords (..)
     , mandelbrotDisplay
@@ -15,7 +15,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.Chan (newChan, getChanContents, writeChan)
 import System.Directory (doesFileExist)
 
-import qualified Graphics.UI.Threepensny as UI
+import qualified Graphics.UI.Threepenny as UI
 import qualified Graphics.UI.Threepenny.Attributes as Attr
 import qualified Graphics.UI.Threepenny.Events as Ev
 
@@ -29,7 +29,7 @@ data Settings = Settings
 data MandelbrotDisplay = MandelbrotDisplay
     { view        :: Behavior ViewWindow
     , isRendering :: Behavior Bool
-    , mousePos    :: Behavior Compl
+    , mousePos    :: Behavior Complex
     , visual      :: Element
     }
 
@@ -46,7 +46,7 @@ renderImageName :: String
 renderImageName = "mandelbrot.png"
 
 localPath :: String -> FilePath
-localPath name = "./content/" ++ name
+localPath name = "./static/" ++ name
 
 clientPath :: String -> String
 clientPath name = "/static/" ++ name
@@ -61,9 +61,9 @@ mandelbrotDisplay settings = do
     let
         eMousedown = Ev.mousedown img
 
-        getPos (ptX, ptY) vw = project vw (resolution settings) (Coords ptX ptY)
+        getPos (ptX, ptY) vw = project vw (resolution settings) (Coords  ptX ptY)
 
-        makeViewChange (ptX, ptY) vw = zoom (zoom settings) cent vw
+        makeViewChange (ptX, ptY) vw = zoomTo (zoom settings) cent vw
             where cent = getPos (ptX, ptY) vw
 
         render vw = liftIO . run $ renderView settings vw (localPath renderImageName)
@@ -73,11 +73,15 @@ mandelbrotDisplay settings = do
     -- define behaviours (start rendering on mousedown, stop on end of rendering)
     rendering <- stepper False $ unionWith (||) (const False <$> eDone) (const True <$> eMousedown)
     -- change the view based on clicked position if not currently rendering
-    vw        <- accumB startView $ makeViewChange <$> whenE (not <$> rendering) eMousedown
-    -- get the compl-coordinates for the mousepos
+    let eMousedownInt = fmap (\(x, y) -> (floor x, floor y)) eMousedown
+    vw <- accumB startView $ makeViewChange <$> whenE (not <$> rendering) eMousedownInt
+
+    -- get the Complex-coordinates for the mousepos
     mPos      <- stepper (0,0) $ Ev.mousemove img
     let 
-        cPos =  (getPos <$> mPos) <*> vw
+    
+        cPos =  (getPos <$> (fmap (\(x, y) -> (floor x, floor y)) mPos)) <*> vw
+
 
     -- hook up side-effects
     onEvent   eDone     setImage
@@ -86,7 +90,7 @@ mandelbrotDisplay settings = do
     return $ (MandelbrotDisplay vw rendering cPos img)
 
 renderView :: Settings -> ViewWindow -> FilePath -> IO()
-renderView settings vw = createImageParallel vw (renderSteps settings) (resolution settings)
+renderView settings vw = createImageInParallel vw (renderSteps settings) (resolution settings)
 
 mkImage :: UI Element
 mkImage = do
