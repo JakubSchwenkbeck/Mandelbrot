@@ -7,11 +7,11 @@ module Mandelbrot
     , createImage
     , createImageInParallel
     , project
-    , zoom
+    , zoomTo
     ) where
 
 import Codec.Picture (PixelRGB8(..), Image, generateImage, writePng)
-import Data.Array.Repa as Repa hiding ((++))
+--import Data.Array.Repa as Repa hiding ((++))
 import Data.Functor.Identity
 
 data Complex =
@@ -45,26 +45,16 @@ mandelbrotImage :: Steps -> ViewWindow -> PictureSize -> Image PixelRGB8
 mandelbrotImage maxSteps vw sz@(Size w h) = generateImage calcPixel w h
     where calcPixel x' y' = color maxSteps $ mandelbrotIter maxSteps $ project vw sz (Coords x' y')
 
--{-- | calculates the mandelbrot-set as an colored image using the Repa package (parallel array computation)
-mandelbrotParallel :: Steps -> ViewWindow -> PictureSize -> Image PixelRGB8
-mandelbrotParallel maxSteps vw sz@(Size w h) = runIdentity go
-    where go             = do
-            arr <- stepArray
-            return $ generateImage (getPixel arr) w h
-          getPixel arr x' y' = rgbToPixelRGB8 $ arr ! (Z:.x':.y')
-          stepArray :: Identity (Array U DIM2 RGB)
-          stepArray          = computeP $ mandelbrotArray maxSteps vw sz
-
-mandelbrotArray :: Steps -> ViewWindow -> PictureSize -> Array D DIM2 RGB
-mandelbrotArray maxSteps vw sz@(Size w h) = fromFunction (Z:.w:.h) calcPixel
-    where calcPixel (Z:.x':.y') = colorRGB maxSteps $ mandelbrotIter maxSteps $ project vw sz (Coords x' y')
--}
+color :: Steps -> Steps -> PixelRGB8
+color maxSteps = rgbToPixelRGB8 . colorRGB maxSteps
+rgbToPixelRGB8 :: RGB -> PixelRGB8
+rgbToPixelRGB8 (r, g, b) = PixelRGB8 (fromIntegral r) (fromIntegral g) (fromIntegral b)
 
 
 -- Generate the mandelbrot set as a list of lists
 mandelbrotArray :: Steps -> ViewWindow -> PictureSize -> [[RGB]]
 mandelbrotArray maxSteps vw sz@(Size w h) =
-    [[colorRGB maxSteps (mandelbrotIter maxSteps (project vw sz (x', y'))) | x' <- [0..w-1]] | y' <- [0..h-1]]
+    [[colorRGB maxSteps (mandelbrotIter maxSteps (project vw sz (Coords x' y'))) | x' <- [0..w-1]] | y' <- [0..h-1]]
 
 -- Generate the image from the list of lists
 mandelbrotParallel :: Steps -> ViewWindow -> PictureSize -> Image PixelRGB8
@@ -73,7 +63,7 @@ mandelbrotParallel maxSteps vw sz@(Size w h) = generateImage getPixel w h
         pixelArray = mandelbrotArray maxSteps vw sz
         getPixel x' y' = rgbToPixelRGB8 (pixelArray !! y' !! x')
 
-        
+
 -- | translates the steps taken till the sequence got out-of-bounds into a RGB value for a color using a very basic approach of just bit-masking (notice: in the later stages the PixelRGB8 structure will "mod" to 8-bits by default)
 colorRGB :: Steps -> Steps -> RGB
 colorRGB maxSteps steps
@@ -98,8 +88,8 @@ viewWidth v = re $ lowerRight v - upperLeft v
 viewHeight :: ViewWindow -> Double
 viewHeight v = im $ lowerRight v - upperLeft v
 
-zoom :: Double -> Complex -> ViewWindow -> ViewWindow
-zoom z c v = View (c-d) (c+d)
+zoomTo :: Double -> Complex -> ViewWindow -> ViewWindow
+zoomTo z c v = View (c-d) (c+d)
     where d = C (w/2) (h/2)
           w = (1/z) * viewWidth v
           h = (1/z) * viewHeight v
