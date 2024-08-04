@@ -1,60 +1,61 @@
--- Main.hs
+module Main where
 
-import Graphics.UI.Threepenny as UI
-import Graphics.UI.Threepenny.Core as UI
+import Display
+
 import Control.Monad
-import Mandelbrot
+
+import Graphics.UI.Threepenny.Core
+import qualified Graphics.UI.Threepenny.Elements as E
+import qualified Graphics.UI.Threepenny.Attributes as A
+
 main :: IO ()
-main = startGUI defaultConfig setup
+main = do
 
-setup :: Window -> UI ()
-setup window = do
-    return window # set title "Mandelbrot Set"
-    canvas <- UI.canvas
-        # set UI.width 800
-        # set UI.height 600
-        # set style [("border", "1px solid black")]
-    getBody window #+ [element canvas]
-    on UI.click canvas $ \_ -> renderMandelbrot canvas
+    let settings = defaultSettings
 
+    -- create the start-image if neccessary
+    verifyStartImageFile settings
 
-renderMandelbrot :: Element -> UI ()
-renderMandelbrot canvas = do
-    -- Set up canvas context
-    context <- liftIO $ getCanvasContext canvas
-    let width = 800
-        height = 600
-    liftIO $ setCanvasSize canvas width height
+    putStrLn "starting local server..."
+    startGUI defaultConfig
+        { tpPort = 10000
+        , tpStatic = Just "./content"
+        } (setup settings)
 
-    -- Define Mandelbrot parameters
-    let maxIterations = 100
-        xMin = -2.0
-        xMax = 1.0
-        yMin = -1.5
-        yMax = 1.5
+defaultSettings :: Settings
+defaultSettings = Settings defaultRes defaultZoom defaultSteps
+    where
+    defaultRes     = Size 1024 711
+    defaultSteps   = 1024
+    defaultZoom    = 4
 
-    -- Iterate over pixels and compute Mandelbrot set
-    forM_ [0 .. width - 1] $ \px -> do
-        forM_ [0 .. height - 1] $ \py -> do
-            let x = xMin + (fromIntegral px / fromIntegral width) * (xMax - xMin)
-                y = yMin + (fromIntegral py / fromIntegral height) * (yMax - yMin)
-                iterations = mandelbrotIterations x y maxIterations
-                color = getColor iterations  -- Get the color based on iterations
-            liftIO $ setCanvasColor context px py color
+setup :: Settings -> Window -> UI ()
+setup settings w = void $ do
+        E.addStyleSheet w "styles.css"
+        return w # set title "Mandelbrot generator "
 
+        md <- mandelbrotDisplay settings
+        output <- E.div # set A.class_ "output" #+ [element md]
 
+        statusText <- string promptClick #
+           sink text (statusForRendering <$> isRendering md)
 
--- Utility function to set canvas color at a specific pixel
-setCanvasColor :: UI.Canvas -> Int -> Int -> String -> UI ()
-setCanvasColor canvas x y color = do
-    -- Set the fill color
-    UI.fillStyle color
-    -- Draw a filled rectangle (1x1 pixel) at the specified position
-    UI.fillRect (fromIntegral x) (fromIntegral y) 1 1 canvas
+        mousePosText <- string "[-]" #
+            sink text (statusForMouseCoords <$> mousePos md)
 
--- Utility function to set canvas size
-setCanvasSize :: Element -> Int -> Int -> IO ()
-setCanvasSize canvas w h = do
-    -- Set the canvas dimensions
-    element canvas # set UI.width w
-                   # set UI.height h
+        status <- E.ul # set A.class_ "status" #+ [E.li #+ [element statusText], E.li #+ [element mousePosText]]
+
+        getBody w #+ [element output, element status]
+
+statusForRendering :: Bool -> String
+statusForRendering True  = waitMessage
+statusForRendering False = promptClick
+
+statusForMouseCoords :: Compl -> String
+statusForMouseCoords c = "[" ++ show c ++ "]"
+
+promptClick :: String
+promptClick = "click anywhere to zoom in to this point"
+
+waitMessage :: String
+waitMessage = "rendering please wait ..."

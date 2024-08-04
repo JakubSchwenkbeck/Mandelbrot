@@ -61,10 +61,14 @@ executable Mandelbrot
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
     
-    build-depends:       base >=4.7 && <5,
-                       threepenny-gui,
-                       text
-
+    build-depends:       base >=4.6 && <4.7,
+                       directory,
+                       transformers,
+                    
+                       JuicyPixels,
+                       threepenny-gui
+                      
+  -- hs-source-dirs:      
     -- Modules included in this executable, other than Main.
     other-modules:
     Display.hs,

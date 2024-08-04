@@ -15,7 +15,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.Chan (newChan, getChanContents, writeChan)
 import System.Directory (doesFileExist)
 
-import qualified Graphics.UI.Threepenny as UI
+import qualified Graphics.UI.Threepensny as UI
 import qualified Graphics.UI.Threepenny.Attributes as Attr
 import qualified Graphics.UI.Threepenny.Events as Ev
 
@@ -63,7 +63,7 @@ mandelbrotDisplay settings = do
 
         getPos (ptX, ptY) vw = project vw (resolution settings) (Coords ptX ptY)
 
-        makeViewChange (ptX, ptY) vw = zoomTo (zoom settings) cent vw
+        makeViewChange (ptX, ptY) vw = zoom (zoom settings) cent vw
             where cent = getPos (ptX, ptY) vw
 
         render vw = liftIO . run $ renderView settings vw (localPath renderImageName)
