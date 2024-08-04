@@ -13,5 +13,8 @@ mandelbrotIterations x y maxIterations = go (0 :+ 0) 0
         | otherwise = go (z^2 + (x :+ y)) (iter + 1)
 
 -- Map iterations to colors (you can customize this function)
-getColor :: Int -> String
-getColor iterations = -- Your color mapping logic here
+getColor iterations
+    | iterations == maxIterations = "black"  -- Inside the Mandelbrot set
+    | otherwise = "orange"  -- Outside the Mandelbrot set
+  where
+    maxIterations = 100  -- Adjust this value as needed
