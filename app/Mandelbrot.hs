@@ -1,3 +1,4 @@
+--| Mandelbrot module handles all the calculations with the Complex numbers and the pixels
 module Mandelbrot 
     ( Complex (..)
     , Steps
@@ -14,27 +15,32 @@ import Codec.Picture (PixelRGB8(..), Image, generateImage, writePng)
 --import Data.Array.Repa as Repa hiding ((++))
 import Data.Functor.Identity
 
+--| simple Complex Number struct
 data Complex =
     C { re :: Double
       , im :: Double
       } deriving (Eq)
 
+--| Simple Window Struct
 data ViewWindow =
     View { upperLeft  :: Complex
          , lowerRight :: Complex
          } deriving (Show)
 
+--| init Coords ad size
 data PictureCoords = Coords { x :: Int, y :: Int }
 data PictureSize   = Size   { width :: Int, height :: Int }
 
 type Steps = Int
 type RGB   = (Int, Int, Int)
 
+--| Using parrallel processing, this creates the image to display
 createImageInParallel :: ViewWindow -> Steps -> PictureSize -> String -> IO()
 createImageInParallel view maxSteps resolution imagePath = do
   let image = mandelbrotParallel maxSteps view resolution
   writePng imagePath image
-
+  
+--| Non parallel version of creating the Image
 createImage :: ViewWindow -> Steps -> PictureSize -> String -> IO()
 createImage view maxSteps resolution imagePath = do
   let image = mandelbrotImage maxSteps view resolution
@@ -51,12 +57,12 @@ rgbToPixelRGB8 :: RGB -> PixelRGB8
 rgbToPixelRGB8 (r, g, b) = PixelRGB8 (fromIntegral r) (fromIntegral g) (fromIntegral b)
 
 
--- Generate the mandelbrot set as a list of lists
+--| Generate the mandelbrot set as a list of lists
 mandelbrotArray :: Steps -> ViewWindow -> PictureSize -> [[RGB]]
 mandelbrotArray maxSteps vw sz@(Size w h) =
     [[colorRGB maxSteps (mandelbrotIter maxSteps (project vw sz (Coords x' y'))) | x' <- [0..w-1]] | y' <- [0..h-1]]
 
--- Generate the image from the list of lists
+--| Generate the image from the list of lists
 mandelbrotParallel :: Steps -> ViewWindow -> PictureSize -> Image PixelRGB8
 mandelbrotParallel maxSteps vw sz@(Size w h) = generateImage getPixel w h
     where
