@@ -1,9 +1,9 @@
+--| Main functions
 module Main where
 
+--| import the Display and GUI
 import Display
-
 import Control.Monad
-
 import Graphics.UI.Threepenny.Core
 import qualified Graphics.UI.Threepenny.Elements as E
 import qualified Graphics.UI.Threepenny.Attributes as A
