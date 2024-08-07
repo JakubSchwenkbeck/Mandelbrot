@@ -1,13 +1,14 @@
 --| Main functions
 module Main where
 
---| import the Display and GUI
+--| import the Display and GUI 
 import Display
 import Control.Monad
 import Graphics.UI.Threepenny.Core
 import qualified Graphics.UI.Threepenny.Elements as E
 import qualified Graphics.UI.Threepenny.Attributes as A
 
+--| Main Routine
 main :: IO ()
 main = do
 
@@ -29,6 +30,7 @@ defaultSettings = Settings defaultRes defaultZoom defaultSteps
     defaultSteps   = 1024
     defaultZoom    = 4
 
+--| Setup function
 setup :: Settings -> Window -> UI ()
 setup settings w = void $ do
         E.addStyleSheet w "styles.css"
