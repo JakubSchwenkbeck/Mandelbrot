@@ -9,25 +9,29 @@ module Display
     , verifyStartImageFile
     ) where
 
---| Imports, working with concurrecy and using the Threepenny Graphics UI
+--Imports:
+
+--| Importing the selfwritten Mandelbrot functions
 import Mandelbrot
 
+--| Importing concurenncy and file util
 import Control.Monad
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Chan (newChan, getChanContents, writeChan)
 import System.Directory (doesFileExist)
-
+--| Importing the Threepenny GUI 
 import qualified Graphics.UI.Threepenny as UI
 import qualified Graphics.UI.Threepenny.Attributes as Attr
 import qualified Graphics.UI.Threepenny.Events as Ev
-
 import Graphics.UI.Threepenny.Core
 
+ --| init settings
 data Settings = Settings
     { resolution  :: PictureSize
     , zoom        :: Double
     , renderSteps :: Steps}
-
+    
+--| init struct for Display
 data MandelbrotDisplay = MandelbrotDisplay
     { view        :: Behavior ViewWindow
     , isRendering :: Behavior Bool
@@ -35,6 +39,7 @@ data MandelbrotDisplay = MandelbrotDisplay
     , visual      :: Element
     }
 
+--| Init structs with values
 instance Widget MandelbrotDisplay where
     getElement = visual    
 
@@ -53,11 +58,12 @@ localPath name = "./static/" ++ name
 clientPath :: String -> String
 clientPath name = "/static/" ++ name
 
+--| create a UI from the Settings and MandelbrotDisplay struct
 mandelbrotDisplay :: Settings -> UI MandelbrotDisplay
 mandelbrotDisplay settings = do
     img <- mkImage
 
-    -- we want to run the rendering in another thread
+    --| we want to run the rendering in another thread
     (eDone, run) <- liftIO newAsync
 
     let
@@ -72,20 +78,20 @@ mandelbrotDisplay settings = do
 
         setImage () = element img # set Attr.src (clientPath renderImageName)
 
-    -- define behaviours (start rendering on mousedown, stop on end of rendering)
+    --| define behaviours (start rendering on mousedown, stop on end of rendering)
     rendering <- stepper False $ unionWith (||) (const False <$> eDone) (const True <$> eMousedown)
-    -- change the view based on clicked position if not currently rendering
+    --| change the view based on clicked position if not currently rendering
     let eMousedownInt = fmap (\(x, y) -> (floor x, floor y)) eMousedown
     vw <- accumB startView $ makeViewChange <$> whenE (not <$> rendering) eMousedownInt
 
-    -- get the Complex-coordinates for the mousepos
+    --| get the Complex-coordinates for the mousepos
     mPos      <- stepper (0,0) $ Ev.mousemove img
     let 
     
         cPos =  (getPos <$> (fmap (\(x, y) -> (floor x, floor y)) mPos)) <*> vw
 
 
-    -- hook up side-effects
+    --| hook up side-effects
     onEvent   eDone     setImage
     onChanges vw        render
 
