@@ -1,3 +1,4 @@
+--| Display handles all the Pixelplacement and the PNG File creation 
 module Display 
     ( Settings (..)
     , MandelbrotDisplay (..)
@@ -8,6 +9,7 @@ module Display
     , verifyStartImageFile
     ) where
 
+--| Imports, working with concurrecy and using the Threepenny Graphics UI
 import Mandelbrot
 
 import Control.Monad
