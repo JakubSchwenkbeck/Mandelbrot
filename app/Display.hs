@@ -100,6 +100,7 @@ mandelbrotDisplay settings = do
 renderView :: Settings -> ViewWindow -> FilePath -> IO()
 renderView settings vw = createImageInParallel vw (renderSteps settings) (resolution settings)
 
+--| create the image from the UI
 mkImage :: UI Element
 mkImage = do
     img <- UI.image #. "mandelImage"
@@ -119,6 +120,7 @@ newAsync = do
     
     return (eDone, writeChan chan)
 
+--| Handle if there is a starting image
 verifyStartImageFile :: Settings -> IO()
 verifyStartImageFile settings = do
     let filePath = localPath startImageName
